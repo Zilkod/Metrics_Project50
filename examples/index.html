@@ -1,0 +1,216 @@
+<!doctype html>
+<html>
+<head>
+  <title>reLift Demo</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic" />
+  <link rel="stylesheet" href="//cdn.rawgit.com/necolas/normalize.css/master/normalize.css" />
+  <link rel="stylesheet" href="//cdn.rawgit.com/milligram/milligram/master/dist/milligram.min.css" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+  <div class="wrapper">
+    <header class="header">
+      <div class="container">
+        <h1 class="title">Compolite</h1>
+        <p class="description">A simple view library</p>
+        <a class="button" target="_blank" href="https://compolite.js.org/guide/" title="Getting Started"
+          >Documentation</a
+        >
+        <a
+          class="button button-outlined"
+          target="_blank"
+          href="https://compolite.js.org/demo/"
+          title="Getting Started"
+          >Demo</a
+        >
+      </div>
+    </header>
+  </div>
+
+  <style>
+    .mytag {
+      font-weight: bold;
+    }
+  </style>
+
+
+<!-- 
+<count-up start=5></count-up>
+<kobra-kai></kobra-kai> -->
+
+ 
+<!-- 2WB -->
+  <div class="container">
+    <h2>Two-Way Data Binding</h2>
+    <!-- <form-2wdb></form-2wdb> -->
+  </div>
+
+    <!-- COUNTER -->
+  <div>
+    <div class="container">
+      <div class="row">
+        <div class="column center">
+          <h3 class="title">Counter</h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="column center" id="counterWidget" style="display:none">
+
+          <div><h4>{this.count} with {this.countNum}</h4></div>
+          <div>
+            <input type="text" r-bind="text">
+            <textarea>{this.countNum}</textarea>
+            <input type="checkbox"  :value="5">
+            <div>Date:  {new Date().toISOString().slice(0, 10)}</div>
+           
+            
+
+            <count-up></count-up>
+
+          </select>
+
+            <button @click="down" class="button-outline">DOWN</button>
+            <button @click="up" class="button-outline">UP</button>
+            <button @click="set5" class="button-outline">5</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TODO APP -->
+  <div>
+    <div class="container">
+      <div class="row">
+        <div class="column center">
+          <hr />
+          <h3 class="title">My Todos</h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="column">
+          <script src="https://gist.github.com/mardix/5da94dd5ce637ce2e6a422e0113b654a.js"></script>
+        </div>
+        <div class="column" id="todoAppWidget">
+          <div class="center">
+            <div>Enter your item</div>
+            <input type="text" id="todo-input" />
+            <button @click="add">Save</button>
+          </div>
+          <div>
+            <ul>
+              <li :for="(item,i) in this.todos" :key="{i}">{item} <a @click="remove" data-index="{i}">Remove</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- STAR WARS -->
+  <div>
+      <div class="container">
+        <div class="row">
+          <div class="column center">
+            <hr />
+            <h3 class="title">Star Wars with Ajax Call Using Local State</h3>
+          </div>
+        </div>
+        <div class="row">
+          <div class="column">
+              <script src="https://gist.github.com/mardix/0c4cdbece3592320cd4e34d373b27ca6.js"></script>
+          </div>
+          <div class="column" id="starWarsWidget">
+            <div class="center">
+              <span :if="(this.loadingStatus === 'pending')"><div class="spinner"></div></span>
+              <h4 :else>Welcome to Star Wars</h4>
+            </div>
+            <div>
+              <ul>
+                <li :for="(item,i) in this.peopleList">{item.name} [<a @click="remove" data-index="{i}">+</a>]</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+
+
+  <!-- Import as custom element -->
+  <script type="module" src="./tag.count-up.js"></script>
+  <script type="module" src="./tag.form-2wdb.js"></script>
+  <script type="module">
+    import Compolite from '../src/index.js';
+
+    // COUNTER
+    Compolite({
+      el: '#counterWidget',
+      tagName: 'kobra-kai',
+      data: {
+        count: 0,
+        countNum: state => `We are now counting ${state.count}`,
+        dopeCounter: 0,
+      }, 
+      up() {
+        this.data.count++;
+      },
+      down() {
+        this.data.count--;
+      },
+      created() {
+        console.log('CREATED')
+        //setInterval(() => {
+         // this.data.dopeCounter++;
+          //console.log(this.data.dopeCounter)
+        //}, 20)
+      }
+    });
+
+    // TODO APP
+    Compolite({
+      el: '#todoAppWidget',
+      data: {
+        count: 0,
+        todos: ['Take dog to school', 'Eat dinner', 'Code more'],
+      },
+      add() {
+        const input = this.el.querySelector('#todo-input');
+        if (input.value) {
+          this.data.todos.push(input.value);
+        }
+      },
+      remove(e) {
+        const index = parseInt(e.target.getAttribute('data-index'));
+        this.data.todos.splice(index, 1);
+      },
+    });
+
+    // STAR WARS
+    const STARS_WARS_BASE_API = 'https://swapi.co/api';
+    const delay = ms => new Promise(res => setTimeout(res, ms))
+    Compolite({
+      el: '#starWarsWidget',
+      data: {
+        peopleList: [],
+        loadingStatus: null
+      },
+      async loadPeople(){
+        this.data.loadingStatus = 'pending';
+        await delay(5000); // to create the delay
+        const resp = await fetch(`${STARS_WARS_BASE_API}/people/`);
+        const data = await resp.json();
+        this.data.peopleList = data.results;
+        this.data.loadingStatus = 'done';
+      },
+      created() {
+        this.loadPeople();
+      }
+    })
+  </script>
+</body>
+</html>
